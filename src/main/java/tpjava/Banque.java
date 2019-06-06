@@ -1,7 +1,9 @@
 package tpjava;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,10 +17,12 @@ public class Banque implements Serializable {
 	private static final long serialVersionUID = -9194473230706953200L;
 	List<Proprietaire> proprietaires;
 	List<Compte> comptes;
+	List<VirementAutomatique> virements;
 
 	public Banque() {
 		proprietaires = new ArrayList<Proprietaire>();
 		comptes = new ArrayList<Compte>();
+		virements = new ArrayList<VirementAutomatique>();
 	}
 
 	public void appliquerInterets() {
@@ -38,7 +42,7 @@ public class Banque implements Serializable {
 		Compte tmp;
 		while (i.hasNext()) {
 			tmp = i.next();
-			if (tmp.getProprietaire() == proprietaire) {
+			if (tmp.getProprietaire().equals(proprietaire)) {
 				comptes.add(tmp);
 			}
 		}
@@ -85,7 +89,29 @@ public class Banque implements Serializable {
 	public void save() throws IOException {
 		FileOutputStream fos = new FileOutputStream("resources/banque.data");
 		ObjectOutputStream oos = new ObjectOutputStream(fos);
-		oos.writeObject(this);
+		oos.writeObject(proprietaires);
+		oos.writeObject(comptes);
 		oos.close();
+	}
+
+	@SuppressWarnings("unchecked")
+	public void load() throws IOException, ClassNotFoundException {
+		FileInputStream fis = new FileInputStream("resources/banque.data");
+		ObjectInputStream ois = new ObjectInputStream(fis);
+
+		proprietaires = (ArrayList<Proprietaire>) ois.readObject();
+		comptes = (ArrayList<Compte>) ois.readObject();
+
+		ois.close();
+	}
+
+	public void appliquerVirements() {
+		Iterator<VirementAutomatique> i = virements.iterator();
+		VirementAutomatique tmp;
+		while (i.hasNext()) {
+			tmp = i.next();
+			tmp.appliquer();
+		}
+		return;
 	}
 }
